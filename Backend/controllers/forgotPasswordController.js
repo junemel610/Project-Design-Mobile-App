@@ -1,7 +1,7 @@
 const inMemoryStore = {}; // Temporary in-memory store for codes
 const { check, validationResult } = require('express-validator');
 const nodemailer = require('nodemailer');
-const User = require('../models/Login');
+const User = require('../models/user');
 
 // Create a Gmail transporter
 const transporter = nodemailer.createTransport({

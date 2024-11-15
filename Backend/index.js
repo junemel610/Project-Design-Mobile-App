@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 require('./models/db');
-const userRouter = require('./routes/Login');
+const userRouter = require('./routes/inspectura');
 const app = express();
 const port = 8000;
 
