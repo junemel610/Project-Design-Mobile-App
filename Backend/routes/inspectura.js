@@ -27,6 +27,6 @@ router.patch('/reset-password', resetPassword);
 
 // For Woods
 router.post('/create-wood', createWoodprof);
-router.get('/wood-data', isAuth, getWoodData); 
+router.get('/wood-data', getWoodData); 
 
 module.exports = router;

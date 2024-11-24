@@ -1,9 +1,18 @@
 const jwt = require('jsonwebtoken');
-const wood = require('../models/analytics');
+const Analytic = require('../models/analytics');
+
+// Function to convert time from "HH:mm:ss" format to total minutes
+const convertTimeToMinutes = (timeString) => {
+    const [hours, minutes] = timeString.split(':').map(Number);
+    return hours * 60 + minutes; // Convert to total minutes
+};
 
 exports.createWoodprof = async (req, res) => {
     try {
         const { woodCount, defectType, defectNo, woodClassification, date, time } = req.body;
+
+        // Convert time to total minutes if necessary
+        const timeInMinutes = convertTimeToMinutes(time);
 
         const wood = new Analytic({
             woodCount,
@@ -11,11 +20,13 @@ exports.createWoodprof = async (req, res) => {
             defectNo,
             woodClassification,
             date: new Date(date), 
-            time, 
+            time: timeInMinutes, // Save as total minutes
         });
 
         await wood.save();
 
+        console.log('Wood profile created successfully:', wood);
+        
         res.json({ success: true, wood });
     } catch (error) {
         console.error('Error creating wood profile:', error);
@@ -24,8 +35,10 @@ exports.createWoodprof = async (req, res) => {
 };
 
 exports.getWoodData = async (req, res) => {
+    console.log('Fetching wood data'); // Log when the request is made
     try {
-        const woodData = await Analytic.find(); // Use the model to fetch data
+        const woodData = await Analytic.find();
+        console.log('Fetched wood data:', woodData); // Log the retrieved data
 
         res.json({
             success: true,
