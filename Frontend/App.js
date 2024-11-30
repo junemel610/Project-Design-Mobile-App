@@ -7,9 +7,10 @@ import LoginScreen from './LoginScreen';
 import HomeScreen from './HomeScreen';
 import OTPVerification from './OTPVerification';
 import PasswordResetScreen from './PasswordResetScreen';
-import NewPassword from './NewPassword'; // Import NewPassword screen
-import PasswordChangeSuccessScreen from './PasswordChangeSuccessScreen'; // Import success screen
-
+import NewPassword from './NewPassword'; 
+import PasswordChangeSuccessScreen from './PasswordChangeSuccessScreen'; 
+import AnalyticsDetails from './AnalyticsDetails';
+import WoodDetails from './WoodDetails';
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -23,6 +24,8 @@ export default function App() {
         <Stack.Screen name="NewPassword" component={NewPassword} /> 
         <Stack.Screen name="OTPVerification" component={OTPVerification} />
         <Stack.Screen name="PasswordChangeSuccess" component={PasswordChangeSuccessScreen} />
+        <Stack.Screen name="AnalyticsDetails" component={AnalyticsDetails} />
+        <Stack.Screen name="WoodDetails" component={WoodDetails} />
       </Stack.Navigator>
     </NavigationContainer>
   );
