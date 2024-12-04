@@ -1,2 +1,4 @@
 # local env files
 Backend/.env
+Frontend/.expo
+Frontend/node_modules

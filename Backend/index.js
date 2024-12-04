@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const nodemailer = require('nodemailer');
 require('dotenv').config();
 require('./models/db');
 const userRouter = require('./routes/inspectura');
