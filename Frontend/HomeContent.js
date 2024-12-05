@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import Video from 'react-native-video';
+import { WebView } from 'react-native-webview'; // Import WebView
 
 export default function HomeContent() {
   return (
@@ -14,10 +14,11 @@ export default function HomeContent() {
         <Text style={styles.welcomeText}>Welcome to the Home Screen!</Text>
       </View>
       <View style={styles.videoContainer}>
-        <Video
-          source={{ uri: 'https://www.example.com/video.mp4' }} 
-          controls={true}
-          resizeMode="contain"
+        <WebView
+          source={{ uri: 'https://www.youtube.com/embed/gvkqT_Uoahw' }} // Use embed URL
+          style={styles.video} // Apply the styles to the WebView
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
         />
       </View>
       <View style={styles.welcomeContainer}>
