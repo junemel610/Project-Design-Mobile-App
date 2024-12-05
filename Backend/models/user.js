@@ -34,19 +34,14 @@ UserSchema.pre('save', function(next) {
         })
     }
 })
-
-UserSchema.methods.comparePassword = async function (password) {
-    if (!password) throw new Error('The password cannot be compared because it is missing.');
-  
-    try {
-      const result = await bcrypt.compare(password, this.password);
-      return result;
-    } catch (error) {
-      console.log('Error while comparing password.', error.message);
-      return false; // Return false if an error occurs during comparison
-    }
-  };
 */
+
+UserSchema.methods.comparePassword = function(password) {
+    if (!password) throw new Error('The password cannot be compared because it is missing.');
+
+    // Compare the provided password with the stored password
+    return password === this.password; // Simple equality check
+};
 
 UserSchema.statics.isThisEmailInUse = async function(email) {
     if(!email) throw new Error('Invalid Email')
