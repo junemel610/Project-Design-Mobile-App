@@ -23,6 +23,7 @@ const UserSchema = new mongoose.Schema({
     }
 });
 
+/*
 UserSchema.pre('save', function(next) {
     if(this.isModified('password')){
         bcrypt.hash(this.password, 8, (err, hash) => {
@@ -45,7 +46,7 @@ UserSchema.methods.comparePassword = async function (password) {
       return false; // Return false if an error occurs during comparison
     }
   };
-  
+*/
 
 UserSchema.statics.isThisEmailInUse = async function(email) {
     if(!email) throw new Error('Invalid Email')

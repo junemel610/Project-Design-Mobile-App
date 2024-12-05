@@ -1,29 +1,79 @@
 // LoginScreen.js
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect} from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, BackHandler, Alert} from 'react-native';
 import axios from 'axios';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const backendUrl = Constants.expoConfig.extra.BACKEND_URL;
+
 export default function LoginScreen({ navigation }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSignInAccount = async () => {
+    try {
+      if (!username || !password) {
+        alert('Username and password are required');
+        console.error('Username and password are required');
+        return;
+      }
+  
+      const response = await axios.post(`${backendUrl}/sign-in`, {
+        username: username,  // Assuming the server expects 'username' instead of 'identifier'
+        password: password,
+      });
+  
+      console.log('Login Response:', response.data);
+  
+      if (response.data && response.data.success) {
+        navigation.navigate('Home');
+        console.log('Login successful');
+        // Store the token in AsyncStorage
+        const token = response.data.token;
+        await AsyncStorage.setItem('token', token);
+        console.log('Token saved to AsyncStorage:', token);
+        navigation.navigate('Home')
+        
+      } else {
+        console.error('Error during login:', response.data.message);
+  
+        Alert.alert('Error', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
+  
+      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+    }
+  };
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      // Prevent going back when the user is on the Sign In screen
+      return true;
+    });
+
+    return () => backHandler.remove(); // Cleanup the event listener on component unmount
+  }, []);
+
   return (
     <View style={styles.loginContainer}>
       <Text style={styles.header}>Login here</Text>
       <Text style={styles.subHeader}>Welcome back, you've been missed!</Text>
 
-      <TextInput style={styles.input} placeholder="Username" placeholderTextColor="#aaa" />
-      <TextInput style={styles.input} placeholder="Password" placeholderTextColor="#aaa" secureTextEntry />
+      <TextInput style={styles.input} placeholder="Username" placeholderTextColor="#aaa" onChangeText={(text) => setUsername(text)}/>
+      <TextInput style={styles.input} placeholder="Password" placeholderTextColor="#aaa" secureTextEntry onChangeText={(text) => setPassword(text)}/>
 
       <TouchableOpacity
         style={styles.forgotPasswordContainer}
-        onPress={() => navigation.navigate('PasswordReset')} // Navigate to PasswordReset screen
+        onPress={() => navigation.navigate('PasswordReset')} 
       >
         <Text style={styles.forgotPassword}>Forgot your password?</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.signInButton}
-        onPress={() => navigation.navigate('Home')} // Navigate to Home on sign-in
+        onPress={handleSignInAccount}
       >
         <Text style={styles.signInText}>Sign in</Text>
       </TouchableOpacity>
