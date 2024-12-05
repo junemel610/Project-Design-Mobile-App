@@ -24,19 +24,7 @@ check('contactNumber')
     .trim()
     .not()
     .isEmpty()
-    .withMessage('Contact number is required.'),
-
-check('program')
-    .trim()
-    .not()
-    .isEmpty()
-    .withMessage('Program is required.'),
-
-check('yearLevel')
-    .trim()
-    .not()
-    .isEmpty()
-    .withMessage('Year level is required.')
+    .withMessage('Contact number is required.')
 ]
 
 exports.userValidation = (req, res, next) => {

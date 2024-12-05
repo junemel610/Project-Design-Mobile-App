@@ -5,7 +5,7 @@ exports.createUser = async (req, res) => {
     try {
         console.log('Received data in createUser:', req.body);
 
-        const { email, username, password, contactNumber, yearLevel, program, fullname } = req.body;
+        const { email, username, password, contactNumber, fullname} = req.body;
 
         // Check if the email is already in use
         const isNewUser = await User.isThisEmailInUse(email);
@@ -23,9 +23,7 @@ exports.createUser = async (req, res) => {
             username,
             password,
             fullname,
-            contactNumber,
-            program,
-            yearLevel,
+            contactNumber
         });
 
         // Save the user to the database
@@ -83,9 +81,6 @@ exports.getUserData = async (req, res) => {
                 fullname: user.fullname,  // Ensure that this field is correctly named
                 contactNumber: user.contactNumber,
                 email: user.email,
-                program: user.program,
-                yearLevel: user.yearLevel,
-                profileImage: user.profileImage,
             }
         };
 
@@ -111,9 +106,7 @@ exports.updateUserProfile = async (req, res) => {
               username: updatedUser.username,
               fullname: updatedUser.fullname,
               contactNumber: updatedUser.contactNumber,
-              email: updatedUser.email,
-              program: updatedUser.program,
-              yearLevel: updatedUser.yearLevel,
+              email: updatedUser.email
           }
       };
 

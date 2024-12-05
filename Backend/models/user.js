@@ -20,15 +20,7 @@ const UserSchema = new mongoose.Schema({
     contactNumber: {
         type: String,
         required: true
-    },
-    program: {
-        type: String,
-        required: true
-    },
-    yearLevel: {
-        type: String,
-        required: true
-    },
+    }
 });
 
 UserSchema.pre('save', function(next) {
