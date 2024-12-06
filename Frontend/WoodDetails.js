@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 export default function WoodDetails({ route, navigation }) {
-  const { woodNumber, defects, classification } = route.params;
+  // Destructure the passed parameters from the route
+  const { woodCount, defectNo, woodClassification, defectType } = route.params;
 
   return (
     <View style={styles.container}>
@@ -12,12 +13,13 @@ export default function WoodDetails({ route, navigation }) {
         <Icon name="arrow-back" size={24} color="#000" />
       </TouchableOpacity>
 
-      <Text style={styles.title}>Wood No. "{woodNumber}"</Text>
-      <Text style={styles.label}>Total Defects Detected: {defects.length}</Text>
-      <Text style={styles.label}>Grading Classification:</Text>
-      <Text style={styles.classificationText}>{classification}</Text>
-      
-      <View style={styles.box} />
+      <Text style={styles.title}>Wood Details</Text>
+      <Text style={styles.label}>Wood Count: {woodCount}</Text>
+      <Text style={styles.label}>Total Defects Detected: {defectNo}</Text>
+      <Text style={styles.label}>Grading Classification: {woodClassification}</Text>
+      <Text style={styles.label}>
+        Defect Types: {Array.isArray(defectType) && defectType.length > 0 ? defectType.join(', ') : 'None'}
+      </Text>
     </View>
   );
 }
@@ -44,16 +46,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 18,
     marginVertical: 5,
-  },
-  classificationText: {
-    fontSize: 16,
-    marginVertical: 5,
-  },
-  box: {
-    width: 200,
-    height: 200,
-    borderWidth: 1,
-    borderColor: '#000',
-    marginTop: 20,
+    alignSelf: 'flex-start',
   },
 });

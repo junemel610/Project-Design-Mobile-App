@@ -2,21 +2,80 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useNavigation } from '@react-navigation/native';
 
-export default function AnalyticsDetails({ navigation }) {
+export default function AnalyticsDetails({ localWoodData = [], navigation = useNavigation()}) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
   const [items, setItems] = useState([
-    { label: '2024-11-29', value: '2024-11-29' },
-    { label: '2024-11-28', value: '2024-11-28' },
-    { label: '2024-11-27', value: '2024-11-27' },
+    { label: 'Today', value: 'today' },
+    { label: 'This Week', value: 'this_week' },
+    { label: 'This Month', value: 'this_month' },
+    { label: 'Custom Date', value: 'custom_date' },
   ]);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [filteredData, setFilteredData] = useState([]);
+  const [customDateString, setCustomDateString] = useState('');
 
-  const woodDetails = {
-    woodNumber: '123',
-    defects: ['Defect 1', 'Defect 2', 'Defect 3'],
-    classification: 'High Quality',
+  const handleSelection = (selectedValue) => {
+    switch (selectedValue) {
+      case 'today':
+        const todayData = localWoodData.filter(data =>
+          data && data.date && data.date.toISOString().split('T')[0] === new Date().toISOString().split('T')[0]
+        );
+        setFilteredData(todayData);
+        setCustomDateString('');
+        break;
+      case 'this_week':
+        const startOfWeek = new Date();
+        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay()); // Sunday
+        const endOfWeek = new Date();
+        endOfWeek.setDate(endOfWeek.getDate() + (6 - endOfWeek.getDay())); // Saturday
+        const weekData = localWoodData.filter(data => {
+          return data.date >= startOfWeek && data.date <= endOfWeek;
+        });
+        setFilteredData(weekData);
+        setCustomDateString('');
+        break;
+      case 'this_month':
+        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+        const monthData = localWoodData.filter(data => {
+          return data.date >= startOfMonth && data.date <= endOfMonth;
+        });
+        setFilteredData(monthData);
+        setCustomDateString('');
+        break;
+      case 'custom_date':
+        setShowDatePicker(true);
+        break;
+      default:
+        setFilteredData(localWoodData);
+        setCustomDateString('');
+        break;
+    }
   };
+
+  const onDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShowDatePicker(false);
+    setSelectedDate(currentDate);
+
+    const formattedDate = currentDate.toLocaleDateString();
+
+    // Filtering based on the selected date
+    const filteredData = localWoodData.filter(data => {
+      return data.date.toISOString().split('T')[0] === currentDate.toISOString().split('T')[0];
+    });
+    setFilteredData(filteredData);
+    setCustomDateString(formattedDate);
+  };
+
+  // Calculate totals
+  const woodSortedTotal = filteredData.reduce((total, wood) => total + wood.woodCount, 0);
+  const defectNoTotal = filteredData.reduce((total, wood) => total + wood.defectNo, 0);
 
   return (
     <View style={styles.screen}>
@@ -28,33 +87,65 @@ export default function AnalyticsDetails({ navigation }) {
           setOpen={setOpen}
           setValue={setValue}
           setItems={setItems}
-          placeholder="Select a Date"
+          placeholder="Select a Time Period"
           style={styles.dropdown}
+          onChangeValue={(value) => {
+            handleSelection(value);
+          }}
         />
-        
-        {/* Combined Container for Wood Details */}
-        <View style={styles.detailsContainer}>
-          <Text style={styles.detailsTitle}>Wood Number: {woodDetails.woodNumber}</Text>
-          <Text style={styles.detailsText}>Total Defects Detected: {woodDetails.defects.length}</Text>
-          <Text style={styles.detailsText}>Grading Classification: {woodDetails.classification}</Text>
-          
-          <TouchableOpacity
-            style={styles.detailsButton}
-            onPress={() => navigation.navigate('WoodDetails', woodDetails)}
-          >
-            <Text style={styles.detailsButtonText}>Tap to View More Details</Text>
-          </TouchableOpacity>
-        </View>
+
+        {customDateString ? (
+          <Text style={styles.customDateText}>Selected Date: {customDateString}</Text>
+        ) : null}
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={selectedDate}
+            mode="date"
+            display="default"
+            onChange={onDateChange}
+          />
+        )}
+
+        {filteredData.length > 0 ? (
+          filteredData.map((wood, index) => (
+            <View key={index} style={styles.detailsContainer}>
+              <Text style={styles.detailsTitle}>Wood Count: {wood.woodCount}</Text>
+              <Text style={styles.detailsText}>Total Defects Detected: {wood.defectNo}</Text>
+              <Text style={styles.detailsText}>Date: {wood.date.toLocaleDateString()}</Text>
+              <Text style={styles.detailsText}>Time: {wood.time}</Text>
+              
+              <TouchableOpacity
+                style={styles.detailsButton}
+                onPress={() => navigation.navigate('WoodDetails', {
+                  woodCount: wood.woodCount,
+                  defectNo: wood.defectNo,
+                  woodClassification: wood.woodClassification,
+                  defectType: Array.isArray(wood.defectType) ? wood.defectType : [], 
+                  date: wood.date.toLocaleDateString(),
+                  time: wood.time,
+                })}
+              >
+                <Text style={styles.detailsButtonText}>Tap to View More Details</Text>
+              </TouchableOpacity>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.noDataText}>No data available for the selected period.</Text>
+        )}
+
+        {/* Display Totals */}
+        {filteredData.length > 0 && (
+          <View style={styles.totalsContainer}>
+            <Text style={styles.totalsText}>Total Wood Sorted: {woodSortedTotal}</Text>
+            <Text style={styles.totalsText}>Total Defects Detected: {defectNoTotal}</Text>
+          </View>
+        )}
       </View>
 
-      {/* Bottom Left Back Button */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Icon name="arrow-back" size={24} color="#000" />
       </TouchableOpacity>
-
-      {/* Two Additional Blank Containers */}
-      <View style={styles.blankContainer} />
-      <View style={styles.blankContainer} />
     </View>
   );
 }
@@ -71,6 +162,11 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     marginBottom: 20,
+  },
+  customDateText: {
+    fontSize: 16,
+    marginBottom: 10,
+    color: '#333',
   },
   detailsContainer: {
     padding: 15,
@@ -106,13 +202,20 @@ const styles = StyleSheet.create({
     bottom: 10,
     padding: 10,
   },
-  blankContainer: {
-    width: '90%',
-    height: 100, 
-    marginVertical: 10,
-    borderWidth: 2,
-    borderColor: '#000',
+  noDataText: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  totalsContainer: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#e0e0e0',
     borderRadius: 8,
-    backgroundColor: '#fff',
+  },
+  totalsText: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

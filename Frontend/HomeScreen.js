@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import ExploreScreen from './ExploreScreen';
-import AnalyticsScreen from './AnalyticsScreen';
+import AnalyticsDetails from './AnalyticsDetails';
 import TasksScreen from './TaskScreen';
 import ProfileScreen from './ProfileScreen';
 import HomeContent from './HomeContent'; 
@@ -11,6 +11,23 @@ import { StyleSheet } from 'react-native';
 const Tab = createBottomTabNavigator();
 
 export default function HomeScreen() {
+  const [localWoodData] = useState([
+    {
+      woodCount: 150,
+      defectNo: 3,
+      date: new Date('2024-12-06'), 
+      time: "8:00 AM",
+      woodClassification: "Grade A",
+      defectType: "Dead Knot"
+    },
+    {
+      woodCount: 200,
+      defectNo: 1,
+      date: new Date('2024-12-05'),
+      time: "9:00 AM"
+    },
+  ]);
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -22,14 +39,15 @@ export default function HomeScreen() {
     >
       <Tab.Screen
         name="HomeTab"
-        component={HomeContent}
         options={{
           tabBarLabel: 'Home',
           tabBarIcon: ({ color, size }) => (
             <Icon name="home" size={size} color={color} />
           ),
         }}
-      />
+      >
+        {() => <HomeContent localWoodData={localWoodData} />}
+      </Tab.Screen>
       <Tab.Screen
         name="Explore"
         component={ExploreScreen}
@@ -42,13 +60,15 @@ export default function HomeScreen() {
       />
       <Tab.Screen
         name="Analytics"
-        component={AnalyticsScreen}
         options={{
+          tabBarLabel: 'Analytics',
           tabBarIcon: ({ color, size }) => (
             <Icon name="pie-chart" size={size} color={color} />
           ),
         }}
-      />
+      >
+        {() => <AnalyticsDetails localWoodData={localWoodData} />}
+      </Tab.Screen>
       <Tab.Screen
         name="Tasks"
         component={TasksScreen}
