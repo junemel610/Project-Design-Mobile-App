@@ -1,0 +1,109 @@
+/* General styles */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: white; /* Default background color */
+}
+
+/* Header styling */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    position: sticky;
+    top: 0;
+}
+
+/* Logo styling */
+header .logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Navigation button styling */
+nav {
+    display: flex;
+    gap: 15px;
+}
+
+nav button {
+    background: none;
+    border: 1px solid #ddd;
+    color: #333;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+    background-color: white;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+nav button:hover {
+    background-color: #f0f0f0;
+    border-color: #bbb;
+}
+
+/* Section styling */
+section {
+    display: none;
+    padding: 50px 20px;
+}
+
+section.active {
+    display: block;
+}
+
+/* Home section logo styling */
+#home img {
+    display: block;
+    margin: 0 auto;
+    max-width: 150px;
+    height: auto;
+}
+
+#home h1,
+#home p {
+    text-align: center;
+}
+
+/* Info section styling */
+#info-content {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f4f4f4;
+    border-radius: 5px;
+}
+
+#view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Full viewport height */
+    text-align: center;
+}
+
+#view img {
+    max-width: 640px; /* Limit maximum width of the image */
+    width: 100%; /* Ensure responsive scaling */
+    height: auto; /* Maintain aspect ratio */
+}
+
+.inspection-item {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.inspection-item h3 {
+    margin: 0 0 10px 0;
+}
+
+.inspection-item p {
+    margin: 5px 0;
+}
