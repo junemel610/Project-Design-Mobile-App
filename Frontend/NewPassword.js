@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import axios from 'axios';
 import Constants from 'expo-constants';
-import { useNavigation } from '@react-navigation/native';
 
 const backendUrl = Constants.expoConfig.extra.BACKEND_URL;
 
-export default function NewPassword({ navigation = useNavigation(), route }) {
+export default function NewPassword({ navigation, route }) {
   const { email } = route.params;
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -29,7 +28,7 @@ export default function NewPassword({ navigation = useNavigation(), route }) {
           {
             text: 'OK',
             onPress: () => {
-              navigation.navigate('PasswordChangeSuccessScreen');
+              navigation.navigate('PasswordChangeSuccess');
             },
           },
         ]);
