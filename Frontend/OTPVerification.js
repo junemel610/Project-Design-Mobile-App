@@ -34,9 +34,10 @@ export default function OTPVerification({ navigation, route }) {
   const handleVerify = async (concatenatedOtp) => {
     try {
       setLoading(true);
+      console.log('Verifying OTP:', concatenatedOtp); // Log the OTP being verified
       const response = await axios.post(`${backendUrl}/verify-code`, { email, code: concatenatedOtp });
 
-      console.log('Verification Response:', response);
+      console.log('Verification Response:', response.data);
 
       if (response.data.success) {
         navigation.navigate('NewPassword', { email });
@@ -44,7 +45,7 @@ export default function OTPVerification({ navigation, route }) {
         setError('Invalid verification code. Please try again.');
       }
     } catch (error) {
-      console.error('Verification Error:', error);
+      console.error('Verification Error:', error.response ? error.response.data : error);
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     marginBottom: 20,
-    width: '97%',
+    width: '100%',
   },
   otpInput: {
     width: 50,
