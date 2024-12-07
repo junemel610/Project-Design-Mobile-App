@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import axios from 'axios';
 import Constants from 'expo-constants';
 
@@ -10,6 +10,7 @@ export default function OTPVerification({ navigation, route }) {
   const [otp, setOtp] = useState(['', '', '', '', '', '']); // Array to hold each digit as string
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const inputRefs = useRef([]);
 
   const handleOtpChangeAndVerify = async (index, value) => {
     // Allow only digits (0-9)
@@ -20,12 +21,7 @@ export default function OTPVerification({ navigation, route }) {
 
       // Move to the next input box if filled
       if (value && index < otp.length - 1) {
-        setTimeout(() => {
-          const nextInputElement = document.getElementById(`otp-input-${index + 1}`);
-          if (nextInputElement) {
-            nextInputElement.focus();
-          }
-        }, 50);
+        inputRefs.current[index + 1].focus();
       }
 
       // If the OTP is complete, verify it
@@ -85,31 +81,24 @@ export default function OTPVerification({ navigation, route }) {
         {otp.map((digit, index) => (
           <TextInput
             key={index}
-            id={`otp-input-${index}`} // Assign an ID for focusing
+            ref={el => inputRefs.current[index] = el} // Use refs for focusing
             style={styles.otpInput}
             maxLength={1}
             value={digit} // Stay as string
             onChangeText={(value) => handleOtpChangeAndVerify(index, value)}
             keyboardType="numeric"
             returnKeyType="next"
-            onFocus={() => {}}
             onKeyPress={({ nativeEvent }) => {
               if (nativeEvent.key === 'Backspace' && index > 0) {
                 handleOtpChangeAndVerify(index, ''); // Clear the current input
-                const prevInput = index - 1;
-                setTimeout(() => {
-                  const prevInputElement = document.getElementById(`otp-input-${prevInput}`);
-                  if (prevInputElement) {
-                    prevInputElement.focus();
-                  }
-                }, 50);
+                inputRefs.current[index - 1].focus(); // Move focus to previous input
               }
             }}
           />
         ))}
       </View>
 
-      <TouchableOpacity style={styles.verifyButton} onPress={handleVerify} disabled={loading}>
+      <TouchableOpacity style={styles.verifyButton} onPress={() => handleVerify(otp.join(''))} disabled={loading}>
         <Text style={styles.verifyButtonText}>{loading ? 'Verifying...' : 'Verify'}</Text>
       </TouchableOpacity>
 
@@ -124,7 +113,6 @@ export default function OTPVerification({ navigation, route }) {
     </ScrollView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -160,11 +148,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ccc', // Border color
-    justifyContent: 'flex-start',
+    borderColor: '#ccc',
     marginHorizontal: 2,
-    elevation: 2, // Android shadow
-    shadowColor: '#000', // iOS shadow
+    elevation: 2,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 1.5,

@@ -69,15 +69,13 @@ exports.verifyCode = async (req, res) => {
   console.log('Email:', email);
   console.log('Entered Code:', code);
   console.log('Stored Code for', email, ':', storedCode);
-
-  if (!storedCode || storedCode !== code) {
-      return res.json({ success: false, message: 'Invalid verification code.' });
+  
+  if (code === storedCode) {
+    res.json({ success: true });
+    delete inMemoryStore[email];
+  } else {
+    res.json({ success: false, message: 'Invalid verification code.' });
   }
-
-  // Clear the code after successful verification
-  delete inMemoryStore[email];
-
-  res.json({ success: true, message: 'Verification code is valid.' });
 };
   
 const validatePassword = (password) => {

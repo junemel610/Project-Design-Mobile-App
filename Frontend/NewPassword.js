@@ -1,17 +1,45 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import axios from 'axios';
+import Constants from 'expo-constants';
+import { useNavigation } from '@react-navigation/native';
 
-const NewPassword = ({ navigation }) => {
-  const [password, setPassword] = useState('');
+const backendUrl = Constants.expoConfig.extra.BACKEND_URL;
+
+export default function NewPassword({ navigation = useNavigation(), route }) {
+  const { email } = route.params;
+  const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleResetPassword = () => {
-    if (password !== confirmPassword) {
-      alert('Passwords do not match');
+  const resetPassword = async () => {
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match.');
       return;
     }
-    // Navigate to PasswordChangeSuccessScreen once password is successfully reset
-    navigation.navigate('PasswordChangeSuccess');
+
+    try {
+      const response = await axios.patch(`${backendUrl}/reset-password`, {
+        email,
+        password: newPassword,
+        confirmPassword,
+      });
+
+      if (response.data.success) {
+        Alert.alert('Password Reset', 'Your password has been successfully reset.', [
+          {
+            text: 'OK',
+            onPress: () => {
+              navigation.navigate('PasswordChangeSuccessScreen');
+            },
+          },
+        ]);
+      } else {
+        Alert.alert('Password Reset Failed', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      Alert.alert('Error', 'Failed to reset password. Please try again.');
+    }
   };
 
   return (
@@ -25,8 +53,8 @@ const NewPassword = ({ navigation }) => {
         style={styles.input}
         placeholder="Enter Password"
         secureTextEntry
-        value={password}
-        onChangeText={setPassword}
+        value={newPassword}
+        onChangeText={setNewPassword}
       />
 
       <TextInput
@@ -37,12 +65,12 @@ const NewPassword = ({ navigation }) => {
         onChangeText={setConfirmPassword}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
+      <TouchableOpacity style={styles.button} onPress={resetPassword}>
         <Text style={styles.buttonText}>Reset Password</Text>
       </TouchableOpacity>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -91,4 +119,3 @@ const styles = StyleSheet.create({
   },
 });
 
-export default NewPassword;
