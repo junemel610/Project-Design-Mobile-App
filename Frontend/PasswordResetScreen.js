@@ -1,30 +1,49 @@
 // PasswordReset.js
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import axios from 'axios';
+import Constants from 'expo-constants';
+
+const backendUrl = Constants.expoConfig.extra.BACKEND_URL;
 
 export default function PasswordResetScreen({ navigation }) {
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
 
-  const handleSendCode = () => {
-    // Implement logic to send a verification code to the entered phone number
-    // After sending the code, navigate to the OTPVerification screen:
-    navigation.navigate('OTPVerification', { phoneNumber });
+  const handleSendCode = async () => {
+    console.log('Sending verification code to:', email); 
+    try {
+      const response = await axios.post(`${backendUrl}/send-code`, { email });
+      console.log('Response from server:', response.data); 
+
+      if (response.data.success) {
+        console.log('Verification code sent successfully');
+        Alert.alert('Success', 'Verification code sent successfully. Please check your email.');
+        console.log('Navigating to OTP verification...');
+        navigation.navigate('OTPVerification', { email });
+      } else {
+        console.error('Error sending verification code:', response.data.message);
+        Alert.alert('Error', response.data.message || 'Failed to send verification code.');
+      }
+    } catch (error) {
+      console.error('Error sending verification code:', error);
+      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+    }
+
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Forgot Password?</Text>
       <Text style={styles.subHeader}>
-        Don't worry! It occurs. Please enter the mobile number linked with your account.
+        Don't worry! It occurs. Please enter the email address linked with your account.
       </Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Enter your mobile number"
+        placeholder="Enter your email address"
         placeholderTextColor="#aaa"
-        keyboardType="phone-pad"
-        value={phoneNumber}
-        onChangeText={setPhoneNumber}
+        value={email}
+        onChangeText={setEmail}
       />
 
       <TouchableOpacity style={styles.button} onPress={handleSendCode}>
@@ -32,10 +51,8 @@ export default function PasswordResetScreen({ navigation }) {
       </TouchableOpacity>
 
       <View style={styles.rememberContainer}>
-        <TouchableOpacity onPress={() => { /* Add any logic for remember password */ }}>
-          <Text style={styles.rememberText}>Remember Password?</Text>
-        </TouchableOpacity>
-
+        <Text style={styles.rememberText}>Remember Password?</Text>
+    
         <TouchableOpacity
           style={styles.loginContainer}
           onPress={() => navigation.navigate('Login')} // Navigate to Login screen
@@ -43,6 +60,7 @@ export default function PasswordResetScreen({ navigation }) {
           <Text style={styles.loginText}>Login</Text>
         </TouchableOpacity>
       </View>
+
     </View>
   );
 }

@@ -58,17 +58,26 @@ const sendVerificationEmail = async (email, verificationCode) => {
 
 
 exports.verifyCode = async (req, res) => {
-    const { email, code } = req.body;
-    const storedCode = inMemoryStore[email];
+  const { email, code } = req.body;
 
-    console.log('Entered Code:', code);
-    console.log('Stored Code:', storedCode);
+  // Validate inputs
+  if (!email || !code) {
+      return res.json({ success: false, message: 'Email and code are required.' });
+  }
 
-    if (!storedCode || storedCode !== code) {
-        return res.json({ success: false, message: 'Invalid verification code.' });
-    }
+  const storedCode = inMemoryStore[email];
+  console.log('Email:', email);
+  console.log('Entered Code:', code);
+  console.log('Stored Code for', email, ':', storedCode);
 
-    res.json({ success: true, message: 'Verification code is valid.' });
+  if (!storedCode || storedCode !== code) {
+      return res.json({ success: false, message: 'Invalid verification code.' });
+  }
+
+  // Clear the code after successful verification
+  delete inMemoryStore[email];
+
+  res.json({ success: true, message: 'Verification code is valid.' });
 };
   
 const validatePassword = (password) => {
