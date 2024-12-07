@@ -61,8 +61,8 @@ exports.verifyCode = async (req, res) => {
   const { email, code } = req.body;
 
   // Validate inputs
-  if (!email || !code) {
-      return res.json({ success: false, message: 'Email and code are required.' });
+  if (!email || code === undefined) {
+    return res.json({ success: false, message: 'Email and code are required.' });
   }
 
   // Retrieve the stored code from in-memory store
@@ -73,15 +73,15 @@ exports.verifyCode = async (req, res) => {
   console.log('Stored Code for', email, ':', storedCode);
 
   // Check if storedCode exists
-  if (!storedCode) {
+  if (storedCode === undefined) {
     return res.json({ success: false, message: 'No verification code found for this email.' });
   }
 
-  // Compare code with stored code (trim spaces)
-  if (code.trim() === storedCode.trim()) {
+  // Ensure both codes are numbers for comparison
+  if (Number(code) === Number(storedCode)) {
     // Successful verification
     res.json({ success: true });
-    
+
     // Remove the code from memory after successful verification
     delete inMemoryStore[email];
   } else {
