@@ -9,18 +9,21 @@ const convertTimeToMinutes = (timeString) => {
 
 exports.createWoodprof = async (req, res) => {
     try {
-        const { woodCount, defectType, defectNo, woodClassification, date, time } = req.body;
+        const { woodCount, defects, woodClassification, date, time } = req.body;
 
         // Convert time to total minutes if necessary
         const timeInMinutes = convertTimeToMinutes(time);
 
+        // Calculate total defect count
+        const defectNo = defects.reduce((total, defect) => total + defect.count, 0);
+
         const wood = new Analytic({
             woodCount,
-            defectType,
+            defects, 
             defectNo,
             woodClassification,
-            date: new Date(date), 
-            time: timeInMinutes, // Save as total minutes
+            date: new Date(date),
+            time: timeInMinutes,
         });
 
         await wood.save();
