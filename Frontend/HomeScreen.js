@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import ExploreScreen from './ExploreScreen';
 import AnalyticsDetails from './AnalyticsDetails';
@@ -7,23 +7,51 @@ import ProfileScreen from './ProfileScreen';
 import HomeContent from './HomeContent'; 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { StyleSheet } from 'react-native';
+import axios from 'axios';
+import Constants from 'expo-constants';
+
+const backendUrl = Constants.expoConfig.extra.BACKEND_URL;
 
 const Tab = createBottomTabNavigator();
 
 export default function HomeScreen() {
-  const [localWoodData] = useState([
-    {
-      woodCount: 3,
-      defects: [
-        { "defectType": "Crack", "count": 2 },
-        { "defectType": "Dead Knot", "count": 1 }
-      ],
-      woodClassification: "grade A",
-      date: "2024-12-05",
-      time: "12:30"
-    }
-  ]);
+  const [localWoodData, setLocalWoodData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${backendUrl}/wood-data`);
+        console.log('API Response:', response.data);
+
+        // Check if the response contains woodData and it's an array
+        if (response.data.success && Array.isArray(response.data.woodData)) {
+          // Transform the data into the desired structure
+          const transformedData = response.data.woodData.map(item => ({
+            woodCount: item.woodCount,
+            defects: item.defects.map(defect => ({
+              defectType: defect.defectType,
+              count: defect.count
+            })),
+            woodClassification: item.woodClassification,
+            date: new Date(item.date), // Convert to Date object
+            time: item.time
+          }));
+
+          setLocalWoodData(transformedData);
+        } else {
+          console.error('Expected an array but received:', response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching wood data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+  
   return (
     <Tab.Navigator
       screenOptions={{

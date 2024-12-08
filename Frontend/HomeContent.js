@@ -1,18 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { WebView } from 'react-native-webview';
+import WebView from 'react-native-webview';
 import { useNavigation } from '@react-navigation/native';
 
-export default function HomeContent({ localWoodData = [], navigation = useNavigation()}) {
+export default function HomeContent({ localWoodData = [] }) {
+  const navigation = useNavigation();
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleString());
-  // Calculate today's totals
-  const todayString = new Date().toISOString().split('T')[0];
-  const todayData = localWoodData.filter(wood =>
-    wood && wood.date && wood.date.toISOString().split('T')[0] === todayString
-  );
-  const totalWoodSortedToday = todayData.reduce((total, wood) => total + wood.woodCount, 0);
-  const totalDefectsDetectedToday = todayData.reduce((total, wood) => total + wood.defectNo, 0);
+
+  const todayString = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+
+  // Normalize today's date to midnight
+  const todayMidnight = new Date();
+  todayMidnight.setHours(0, 0, 0, 0);
+
+  const todayData = localWoodData.filter(wood => {
+    const woodDate = new Date(wood.date);
+    // Normalize woodDate to midnight for comparison
+    woodDate.setHours(0, 0, 0, 0);
+    return wood && wood.date && woodDate.toISOString().split('T')[0] === todayString;
+  });
+
+  // Calculate totals
+  const totalWoodSortedToday = todayData.length; // Use the length of todayData instead of summing woodCount
+  const totalDefectsDetectedToday = todayData.reduce((total, wood) => {
+    return total + (wood.defects ? wood.defects.reduce((sum, defect) => sum + defect.count, 0) : 0);
+  }, 0);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -23,7 +36,7 @@ export default function HomeContent({ localWoodData = [], navigation = useNaviga
   }, []);
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>InspecturaX</Text>
         <Icon name="settings" size={24} color="#000" style={styles.settingsIcon} />
@@ -34,11 +47,11 @@ export default function HomeContent({ localWoodData = [], navigation = useNaviga
         <Text style={styles.analyticsText}>Total Wood Sorted for Today: {totalWoodSortedToday}</Text>
         <Text style={styles.analyticsText}>Total Defects Detected for Today: {totalDefectsDetectedToday}</Text>
         <TouchableOpacity
-        style={styles.analyticsButton}
-        onPress={() => {
-          console.log("Navigating to Analytics");
-          navigation.navigate('Analytics'); // This should work if navigation is passed correctly
-        }}
+          style={styles.analyticsButton}
+          onPress={() => {
+            console.log("Navigating to Analytics");
+            navigation.navigate('Analytics'); // This should work if navigation is passed correctly
+          }}
         >
           <Text style={styles.analyticsButtonText}>Tap to View More Details</Text>
         </TouchableOpacity>
@@ -50,23 +63,34 @@ export default function HomeContent({ localWoodData = [], navigation = useNaviga
       
       <View style={styles.videoContainer}>
         <WebView
-          source={{ uri: 'https://www.youtube.com/embed/gvkqT_Uoahw' }}
-          style={styles.video} 
+          source={{ uri: 'https://4cbb-136-158-48-242.ngrok-free.app' }} // Replace with your ngrok URL
+          style={styles.video}
           javaScriptEnabled={true}
           domStorageEnabled={true}
+          startInLoadingState={true} // Show loading indicator
+          scalesPageToFit={true} // Adjusts the webpage to fit
+          onHttpError={(syntheticEvent) => {
+            const { nativeEvent } = syntheticEvent;
+            console.error('HTTP Error: ', nativeEvent);
+          }}
+          onError={(syntheticEvent) => {
+            const { nativeEvent } = syntheticEvent;
+            console.error('WebView Error: ', nativeEvent);
+          }}
+          onLoadStart={() => console.log('Loading started...')} // Log when loading starts
+          onLoadEnd={() => console.log('Loading finished!')} // Log when loading ends
         />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1, // Allow the ScrollView to grow
     paddingTop: 40,
     paddingHorizontal: 20,
     backgroundColor: '#fff',
-    justifyContent: 'flex-start',
   },
   header: {
     flexDirection: 'row',
@@ -90,14 +114,7 @@ const styles = StyleSheet.create({
   },
   videoContainer: {
     width: '100%',
-    height: 200,
-    backgroundColor: 'black', 
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  video: {
-    width: '100%',
-    height: '100%',
+    height: 225, 
   },
   settingsIcon: {
     marginTop: 20,

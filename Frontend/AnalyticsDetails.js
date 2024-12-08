@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -22,28 +22,33 @@ export default function AnalyticsDetails({ localWoodData = [] }) {
 
   const handleSelection = (selectedValue) => {
     const today = new Date();
+    const todayMidnight = new Date(today.setHours(0, 0, 0, 0));
     let newFilteredData = [];
 
     switch (selectedValue) {
       case 'today':
         newFilteredData = localWoodData.filter(data =>
-          data.date && data.date.toISOString().split('T')[0] === today.toISOString().split('T')[0]
+          data.date && new Date(data.date).setHours(0, 0, 0, 0) === todayMidnight.getTime()
         );
         break;
       case 'this_week':
         const startOfWeek = new Date(today);
         startOfWeek.setDate(today.getDate() - today.getDay());
+        startOfWeek.setHours(0, 0, 0, 0);
         const endOfWeek = new Date(today);
         endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
+        endOfWeek.setHours(23, 59, 59, 999);
         newFilteredData = localWoodData.filter(data => 
-          data.date >= startOfWeek && data.date <= endOfWeek
+          new Date(data.date) >= startOfWeek && new Date(data.date) <= endOfWeek
         );
         break;
       case 'this_month':
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        startOfMonth.setHours(0, 0, 0, 0);
         const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        endOfMonth.setHours(23, 59, 59, 999);
         newFilteredData = localWoodData.filter(data => 
-          data.date >= startOfMonth && data.date <= endOfMonth
+          new Date(data.date) >= startOfMonth && new Date(data.date) <= endOfMonth
         );
         break;
       case 'custom_date':
@@ -59,21 +64,26 @@ export default function AnalyticsDetails({ localWoodData = [] }) {
   };
 
   const onDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
     setShowDatePicker(false);
-    setSelectedDate(currentDate);
+    const currentDate = selectedDate || new Date();
 
-    const formattedDate = currentDate.toLocaleDateString();
-    const filteredData = localWoodData.filter(data => 
-      data.date.toISOString().split('T')[0] === currentDate.toISOString().split('T')[0]
-    );
+    // Set selected date to midnight
+    const selectedDateMidnight = new Date(currentDate.setHours(0, 0, 0, 0));
+    const formattedDate = selectedDateMidnight.toLocaleDateString();
+
+    const filteredData = localWoodData.filter(data => {
+      const dataDateMidnight = new Date(data.date);
+      dataDateMidnight.setHours(0, 0, 0, 0);
+      return dataDateMidnight.toISOString().split('T')[0] === selectedDateMidnight.toISOString().split('T')[0];
+    });
     
     setFilteredData(filteredData);
     setCustomDateString(formattedDate);
   };
 
-  const woodSortedTotal = filteredData.reduce((total, wood) => total + wood.woodCount, 0);
-  const defectNoTotal = filteredData.reduce((total, wood) => total + wood.defectNo, 0);
+  // Calculate totals
+  const totalWoodSorted = filteredData.length;  
+  const defectNoTotal = filteredData.reduce((total, wood) => total + (wood.defects.reduce((dTotal, defect) => dTotal + (defect.count || 0), 0) || 0), 0);
 
   return (
     <View style={styles.screen}>
@@ -103,45 +113,46 @@ export default function AnalyticsDetails({ localWoodData = [] }) {
           />
         )}
 
-        {filteredData.length > 0 ? (
-          filteredData.map((wood, index) => (
-            <View key={index} style={styles.detailsContainer}>
-              <Text style={styles.detailsTitle}>Wood Count: {wood.woodCount}</Text>
-              <Text style={styles.detailsText}>Total Defects Detected: {wood.defectNo}</Text>
-              <Text style={styles.detailsText}>Date: {wood.date.toLocaleDateString()}</Text>
-              <Text style={styles.detailsText}>Time: {wood.time}</Text>
-              
-              {wood.defects.map((defect, idx) => (
-                <Text key={idx} style={styles.defectText}>
-                  {defect.defectType}: {defect.count}
-                </Text>
-              ))}
-              
-              <TouchableOpacity
-                style={styles.detailsButton}
-                onPress={() => navigation.navigate('WoodDetails', {
-                  woodCount: wood.woodCount,
-                  defectNo: wood.defectNo,
-                  woodClassification: wood.woodClassification,
-                  defects: wood.defects,
-                  date: wood.date.toLocaleDateString(),
-                  time: wood.time,
-                })}
-              >
-                <Text style={styles.detailsButtonText}>Tap to View More Details</Text>
-              </TouchableOpacity>
-            </View>
-          ))
-        ) : (
-          <Text style={styles.noDataText}>No data available for the selected period. Please try a different date range.</Text>
-        )}
+        <ScrollView style={styles.scrollView}>
+          {filteredData.length > 0 ? (
+            filteredData.map((wood, index) => (
+              <View key={index} style={styles.detailsContainer}>
+                <Text style={styles.detailsTitle}>Wood Count: {wood.woodCount}</Text>
+                <Text style={styles.detailsText}>Total Defects Detected: {wood.defects.reduce((total, defect) => total + defect.count, 0)}</Text>
+                {wood.defects.map((defect, idx) => (
+                  <Text key={idx} style={styles.defectText}>
+                    {defect.defectType}: {defect.count}
+                  </Text>
+                ))}
+                <Text style={styles.detailsText}>Date: {wood.date.toLocaleDateString()}</Text>
+                <Text style={styles.detailsText}>Time: {wood.time}</Text>
+                
+                <TouchableOpacity
+                  style={styles.detailsButton}
+                  onPress={() => navigation.navigate('WoodDetails', {
+                    woodCount: wood.woodCount,
+                    defectNo: wood.defects.reduce((total, defect) => total + defect.count, 0),
+                    woodClassification: wood.woodClassification,
+                    defects: wood.defects,
+                    date: wood.date.toLocaleDateString(),
+                    time: wood.time,
+                  })}
+                >
+                  <Text style={styles.detailsButtonText}>Tap to View More Details</Text>
+                </TouchableOpacity>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.noDataText}>No data available for the selected period. Please try a different date range.</Text>
+          )}
 
-        {filteredData.length > 0 && (
-          <View style={styles.totalsContainer}>
-            <Text style={styles.totalsText}>Total Wood Sorted: {woodSortedTotal}</Text>
-            <Text style={styles.totalsText}>Total Defects Detected: {defectNoTotal}</Text>
-          </View>
-        )}
+          {filteredData.length > 0 && (
+            <View style={styles.totalsContainer}>
+              <Text style={styles.totalsText}>Total Wood Sorted: {totalWoodSorted}</Text>
+              <Text style={styles.totalsText}>Total Defects Detected: {defectNoTotal}</Text>
+            </View>
+          )}
+        </ScrollView>
       </View>
 
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
@@ -168,6 +179,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
     color: '#333',
+  },
+  scrollView: {
+    maxHeight: '80%', // Limit the max height for the scroll view
   },
   detailsContainer: {
     padding: 15,
@@ -211,6 +225,7 @@ const styles = StyleSheet.create({
   },
   totalsContainer: {
     marginTop: 20,
+    marginBottom: 20,
     padding: 10,
     backgroundColor: '#e0e0e0',
     borderRadius: 8,
