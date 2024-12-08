@@ -13,19 +13,15 @@ const Tab = createBottomTabNavigator();
 export default function HomeScreen() {
   const [localWoodData] = useState([
     {
-      woodCount: 150,
-      defectNo: 3,
-      date: new Date('2024-12-06'), 
-      time: "8:00 AM",
-      woodClassification: "Grade A",
-      defectType: "Dead Knot"
-    },
-    {
-      woodCount: 200,
-      defectNo: 1,
-      date: new Date('2024-12-05'),
-      time: "9:00 AM"
-    },
+      woodCount: 3,
+      defects: [
+        { "defectType": "Crack", "count": 2 },
+        { "defectType": "Dead Knot", "count": 1 }
+      ],
+      woodClassification: "grade A",
+      date: "2024-12-05",
+      time: "12:30"
+    }
   ]);
 
   return (

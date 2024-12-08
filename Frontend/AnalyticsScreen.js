@@ -32,8 +32,17 @@ export default function AnalyticsScreen({ navigation }) {
     <View style={styles.screen}>
       {woodData.map((wood, index) => (
         <View key={index} style={styles.analyticsContainer}>
-          <Text style={styles.analyticsTitle}>Wood No.: {wood.woodNumber}</Text>
+          <Text style={styles.analyticsTitle}>Wood Count: {wood.woodCount}</Text>
           <Text style={styles.analyticsText}>Total Defects Detected: {wood.defectNo}</Text>
+          <Text style={styles.analyticsText}>Date: {wood.date.toLocaleDateString()}</Text>
+          <Text style={styles.analyticsText}>Time: {wood.time}</Text>
+          
+          {wood.defects.map((defect, idx) => (
+            <Text key={idx} style={styles.defectText}>
+              {defect.defectType}: {defect.count}
+            </Text>
+          ))}
+
           <TouchableOpacity
             style={styles.analyticsButton}
             onPress={() => navigation.navigate('AnalyticsDetails', { wood })}

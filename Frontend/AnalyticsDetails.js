@@ -5,7 +5,8 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from '@react-navigation/native';
 
-export default function AnalyticsDetails({ localWoodData = [], navigation = useNavigation()}) {
+export default function AnalyticsDetails({ localWoodData = [] }) {
+  const navigation = useNavigation();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
   const [items, setItems] = useState([
@@ -20,42 +21,41 @@ export default function AnalyticsDetails({ localWoodData = [], navigation = useN
   const [customDateString, setCustomDateString] = useState('');
 
   const handleSelection = (selectedValue) => {
+    const today = new Date();
+    let newFilteredData = [];
+
     switch (selectedValue) {
       case 'today':
-        const todayData = localWoodData.filter(data =>
-          data && data.date && data.date.toISOString().split('T')[0] === new Date().toISOString().split('T')[0]
+        newFilteredData = localWoodData.filter(data =>
+          data.date && data.date.toISOString().split('T')[0] === today.toISOString().split('T')[0]
         );
-        setFilteredData(todayData);
-        setCustomDateString('');
         break;
       case 'this_week':
-        const startOfWeek = new Date();
-        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay()); // Sunday
-        const endOfWeek = new Date();
-        endOfWeek.setDate(endOfWeek.getDate() + (6 - endOfWeek.getDay())); // Saturday
-        const weekData = localWoodData.filter(data => {
-          return data.date >= startOfWeek && data.date <= endOfWeek;
-        });
-        setFilteredData(weekData);
-        setCustomDateString('');
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay());
+        const endOfWeek = new Date(today);
+        endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
+        newFilteredData = localWoodData.filter(data => 
+          data.date >= startOfWeek && data.date <= endOfWeek
+        );
         break;
       case 'this_month':
-        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-        const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
-        const monthData = localWoodData.filter(data => {
-          return data.date >= startOfMonth && data.date <= endOfMonth;
-        });
-        setFilteredData(monthData);
-        setCustomDateString('');
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        newFilteredData = localWoodData.filter(data => 
+          data.date >= startOfMonth && data.date <= endOfMonth
+        );
         break;
       case 'custom_date':
         setShowDatePicker(true);
-        break;
+        return;
       default:
-        setFilteredData(localWoodData);
-        setCustomDateString('');
+        newFilteredData = localWoodData;
         break;
     }
+
+    setFilteredData(newFilteredData);
+    setCustomDateString('');
   };
 
   const onDateChange = (event, selectedDate) => {
@@ -64,16 +64,14 @@ export default function AnalyticsDetails({ localWoodData = [], navigation = useN
     setSelectedDate(currentDate);
 
     const formattedDate = currentDate.toLocaleDateString();
-
-    // Filtering based on the selected date
-    const filteredData = localWoodData.filter(data => {
-      return data.date.toISOString().split('T')[0] === currentDate.toISOString().split('T')[0];
-    });
+    const filteredData = localWoodData.filter(data => 
+      data.date.toISOString().split('T')[0] === currentDate.toISOString().split('T')[0]
+    );
+    
     setFilteredData(filteredData);
     setCustomDateString(formattedDate);
   };
 
-  // Calculate totals
   const woodSortedTotal = filteredData.reduce((total, wood) => total + wood.woodCount, 0);
   const defectNoTotal = filteredData.reduce((total, wood) => total + wood.defectNo, 0);
 
@@ -89,14 +87,12 @@ export default function AnalyticsDetails({ localWoodData = [], navigation = useN
           setItems={setItems}
           placeholder="Select a Time Period"
           style={styles.dropdown}
-          onChangeValue={(value) => {
-            handleSelection(value);
-          }}
+          onChangeValue={handleSelection}
         />
 
-        {customDateString ? (
+        {customDateString && (
           <Text style={styles.customDateText}>Selected Date: {customDateString}</Text>
-        ) : null}
+        )}
 
         {showDatePicker && (
           <DateTimePicker
@@ -115,13 +111,19 @@ export default function AnalyticsDetails({ localWoodData = [], navigation = useN
               <Text style={styles.detailsText}>Date: {wood.date.toLocaleDateString()}</Text>
               <Text style={styles.detailsText}>Time: {wood.time}</Text>
               
+              {wood.defects.map((defect, idx) => (
+                <Text key={idx} style={styles.defectText}>
+                  {defect.defectType}: {defect.count}
+                </Text>
+              ))}
+              
               <TouchableOpacity
                 style={styles.detailsButton}
                 onPress={() => navigation.navigate('WoodDetails', {
                   woodCount: wood.woodCount,
                   defectNo: wood.defectNo,
                   woodClassification: wood.woodClassification,
-                  defectType: Array.isArray(wood.defectType) ? wood.defectType : [], 
+                  defects: wood.defects,
                   date: wood.date.toLocaleDateString(),
                   time: wood.time,
                 })}
@@ -131,10 +133,9 @@ export default function AnalyticsDetails({ localWoodData = [], navigation = useN
             </View>
           ))
         ) : (
-          <Text style={styles.noDataText}>No data available for the selected period.</Text>
+          <Text style={styles.noDataText}>No data available for the selected period. Please try a different date range.</Text>
         )}
 
-        {/* Display Totals */}
         {filteredData.length > 0 && (
           <View style={styles.totalsContainer}>
             <Text style={styles.totalsText}>Total Wood Sorted: {woodSortedTotal}</Text>
