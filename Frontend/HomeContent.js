@@ -1,28 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import WebView from 'react-native-webview';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 
 export default function HomeContent({ localWoodData = [] }) {
   const navigation = useNavigation();
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleString());
+  const [url, setUrl] = useState(''); 
+  const [webViewUrl, setWebViewUrl] = useState(''); 
+  const [token, setToken] = useState(null); // State to hold the token
 
-  const todayString = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
-
-  // Normalize today's date to midnight
-  const todayMidnight = new Date();
-  todayMidnight.setHours(0, 0, 0, 0);
+  const todayString = new Date().toISOString().split('T')[0];
 
   const todayData = localWoodData.filter(wood => {
     const woodDate = new Date(wood.date);
-    // Normalize woodDate to midnight for comparison
     woodDate.setHours(0, 0, 0, 0);
     return wood && wood.date && woodDate.toISOString().split('T')[0] === todayString;
   });
 
-  // Calculate totals
-  const totalWoodSortedToday = todayData.length; // Use the length of todayData instead of summing woodCount
+  const totalWoodSortedToday = todayData.length;
   const totalDefectsDetectedToday = todayData.reduce((total, wood) => {
     return total + (wood.defects ? wood.defects.reduce((sum, defect) => sum + defect.count, 0) : 0);
   }, 0);
@@ -35,11 +33,68 @@ export default function HomeContent({ localWoodData = [] }) {
     return () => clearInterval(intervalId);
   }, []);
 
+  // Load token from AsyncStorage
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const storedToken = await AsyncStorage.getItem('token');
+        setToken(storedToken); // Set the token state
+        console.log('Loaded token from AsyncStorage:', storedToken);
+      } catch (error) {
+        console.error('Error loading token:', error);
+      }
+    };
+
+    fetchToken();
+  }, []);
+
+  // Function to handle URL submission
+  const handleUrlSubmit = () => {
+    if (url.trim()) {
+      setWebViewUrl(url);
+    } else {
+      console.warn("Please enter a valid URL.");
+    }
+  };
+
+  // Logout function
+  const handleLogout = () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Logout canceled"),
+          style: "cancel"
+        },
+        {
+          text: "OK",
+          onPress: async () => {
+            try {
+              const storedToken = await AsyncStorage.getItem('token');
+              console.log("Clearing AsyncStorage token: ", storedToken); // Log the actual token
+              
+              // Clear AsyncStorage
+              await AsyncStorage.clear();
+              console.log("Logged out and AsyncStorage cleared");
+              navigation.navigate('Login'); // Navigate to the login screen
+            } catch (error) {
+              console.error('Error during logout:', error);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>InspecturaX</Text>
-        <Icon name="settings" size={24} color="#000" style={styles.settingsIcon} />
+        <TouchableOpacity onPress={handleLogout}>
+          <Icon name="logout" size={24} color="#000" style={styles.logoutIcon} />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.analyticsContainer}>
@@ -50,7 +105,7 @@ export default function HomeContent({ localWoodData = [] }) {
           style={styles.analyticsButton}
           onPress={() => {
             console.log("Navigating to Analytics");
-            navigation.navigate('Analytics'); // This should work if navigation is passed correctly
+            navigation.navigate('Analytics');
           }}
         >
           <Text style={styles.analyticsButtonText}>Tap to View More Details</Text>
@@ -60,15 +115,29 @@ export default function HomeContent({ localWoodData = [] }) {
       <View style={styles.welcomeContainer}>
         <Text style={styles.welcomeText}>Live Streaming</Text>
       </View>
-      
+
+      <View style={styles.urlContainer}>
+        <TextInput
+          style={styles.urlInput}
+          placeholder="Enter URL"
+          value={url}
+          onChangeText={setUrl}
+          onSubmitEditing={handleUrlSubmit} 
+          returnKeyType="go" 
+        />
+        <TouchableOpacity style={styles.submitButton} onPress={handleUrlSubmit}>
+          <Text style={styles.submitButtonText}>Go</Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.videoContainer}>
         <WebView
-          source={{ uri: 'https://4cbb-136-158-48-242.ngrok-free.app' }} // Replace with your ngrok URL
+          source={{ uri: webViewUrl }} 
           style={styles.video}
           javaScriptEnabled={true}
           domStorageEnabled={true}
-          startInLoadingState={true} // Show loading indicator
-          scalesPageToFit={true} // Adjusts the webpage to fit
+          startInLoadingState={true}
+          scalesPageToFit={true}
           onHttpError={(syntheticEvent) => {
             const { nativeEvent } = syntheticEvent;
             console.error('HTTP Error: ', nativeEvent);
@@ -77,8 +146,8 @@ export default function HomeContent({ localWoodData = [] }) {
             const { nativeEvent } = syntheticEvent;
             console.error('WebView Error: ', nativeEvent);
           }}
-          onLoadStart={() => console.log('Loading started...')} // Log when loading starts
-          onLoadEnd={() => console.log('Loading finished!')} // Log when loading ends
+          onLoadStart={() => console.log('Loading started...')}
+          onLoadEnd={() => console.log('Loading finished!')}
         />
       </View>
     </ScrollView>
@@ -87,7 +156,7 @@ export default function HomeContent({ localWoodData = [] }) {
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1, // Allow the ScrollView to grow
+    flexGrow: 1,
     paddingTop: 40,
     paddingHorizontal: 20,
     backgroundColor: '#fff',
@@ -116,7 +185,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 225, 
   },
-  settingsIcon: {
+  logoutIcon: {
     marginTop: 20,
     padding: 5,
   },
@@ -157,6 +226,32 @@ const styles = StyleSheet.create({
   analyticsButtonText: {
     color: '#000',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  urlContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  urlInput: {
+    height: 40,
+    borderColor: '#000',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    flex: 1, // Allow input to take remaining space
+    marginRight: 10, // Space between input and button
+  },
+  submitButton: {
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'black', // Button color
+    borderRadius: 5,
+    paddingHorizontal: 15,
+  },
+  submitButtonText: {
+    color: '#fff',
     fontWeight: 'bold',
   },
 });

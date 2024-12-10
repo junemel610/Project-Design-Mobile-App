@@ -14,6 +14,7 @@ export default function AnalyticsDetails({ localWoodData = [] }) {
     { label: 'This Week', value: 'this_week' },
     { label: 'This Month', value: 'this_month' },
     { label: 'Custom Date', value: 'custom_date' },
+    { label: 'All Wood Details', value: 'all_wood' }, // New option
   ]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -54,6 +55,9 @@ export default function AnalyticsDetails({ localWoodData = [] }) {
       case 'custom_date':
         setShowDatePicker(true);
         return;
+      case 'all_wood': // Handle the new case
+        newFilteredData = localWoodData; // Show all wood data
+        break;
       default:
         newFilteredData = localWoodData;
         break;
@@ -67,7 +71,6 @@ export default function AnalyticsDetails({ localWoodData = [] }) {
     setShowDatePicker(false);
     const currentDate = selectedDate || new Date();
 
-    // Set selected date to midnight
     const selectedDateMidnight = new Date(currentDate.setHours(0, 0, 0, 0));
     const formattedDate = selectedDateMidnight.toLocaleDateString();
 
@@ -113,6 +116,14 @@ export default function AnalyticsDetails({ localWoodData = [] }) {
           />
         )}
 
+        {/* Totals Container placed above the ScrollView */}
+        {filteredData.length > 0 && (
+          <View style={styles.totalsContainer}>
+            <Text style={styles.totalsText}>Total Wood Sorted: {totalWoodSorted}</Text>
+            <Text style={styles.totalsText}>Total Defects Detected: {defectNoTotal}</Text>
+          </View>
+        )}
+
         <ScrollView style={styles.scrollView}>
           {filteredData.length > 0 ? (
             filteredData.map((wood, index) => (
@@ -124,7 +135,7 @@ export default function AnalyticsDetails({ localWoodData = [] }) {
                     {defect.defectType}: {defect.count}
                   </Text>
                 ))}
-                <Text style={styles.detailsText}>Date: {wood.date.toLocaleDateString()}</Text>
+                <Text style={styles.detailsText}>Date: {new Date(wood.date).toLocaleDateString()}</Text>
                 <Text style={styles.detailsText}>Time: {wood.time}</Text>
                 
                 <TouchableOpacity
@@ -134,7 +145,7 @@ export default function AnalyticsDetails({ localWoodData = [] }) {
                     defectNo: wood.defects.reduce((total, defect) => total + defect.count, 0),
                     woodClassification: wood.woodClassification,
                     defects: wood.defects,
-                    date: wood.date.toLocaleDateString(),
+                    date: new Date(wood.date).toLocaleDateString(),
                     time: wood.time,
                   })}
                 >
@@ -144,13 +155,6 @@ export default function AnalyticsDetails({ localWoodData = [] }) {
             ))
           ) : (
             <Text style={styles.noDataText}>No data available for the selected period. Please try a different date range.</Text>
-          )}
-
-          {filteredData.length > 0 && (
-            <View style={styles.totalsContainer}>
-              <Text style={styles.totalsText}>Total Wood Sorted: {totalWoodSorted}</Text>
-              <Text style={styles.totalsText}>Total Defects Detected: {defectNoTotal}</Text>
-            </View>
           )}
         </ScrollView>
       </View>
@@ -165,15 +169,17 @@ export default function AnalyticsDetails({ localWoodData = [] }) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start', // Changed to prevent centering
     alignItems: 'center',
     padding: 20,
+    backgroundColor: 'white',
   },
   container: {
     width: '90%',
+    flex: 1,
   },
   dropdown: {
-    marginBottom: 20,
+    marginTop: 50,
   },
   customDateText: {
     fontSize: 16,
@@ -181,7 +187,8 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   scrollView: {
-    maxHeight: '80%', // Limit the max height for the scroll view
+    marginTop: 10,
+    maxHeight: '70%', // Adjusted for better space management
   },
   detailsContainer: {
     padding: 15,
@@ -224,11 +231,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   totalsContainer: {
-    marginTop: 20,
-    marginBottom: 20,
     padding: 10,
     backgroundColor: '#e0e0e0',
     borderRadius: 8,
+    marginTop: 10, // Added margin to separate from the dropdown
   },
   totalsText: {
     fontSize: 16,

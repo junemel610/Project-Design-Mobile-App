@@ -6,7 +6,7 @@ import TasksScreen from './TaskScreen';
 import ProfileScreen from './ProfileScreen';
 import HomeContent from './HomeContent'; 
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, SafeAreaView } from 'react-native';
 import axios from 'axios';
 import Constants from 'expo-constants';
 
@@ -24,9 +24,7 @@ export default function HomeScreen() {
         const response = await axios.get(`${backendUrl}/wood-data`);
         console.log('API Response:', response.data);
 
-        // Check if the response contains woodData and it's an array
         if (response.data.success && Array.isArray(response.data.woodData)) {
-          // Transform the data into the desired structure
           const transformedData = response.data.woodData.map(item => ({
             woodCount: item.woodCount,
             defects: item.defects.map(defect => ({
@@ -53,65 +51,90 @@ export default function HomeScreen() {
   }, []);
   
   return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: styles.navbar,
-        tabBarLabelStyle: styles.navText,
-        tabBarIconStyle: { marginBottom: -5 },
-      }}
-    >
-      <Tab.Screen
-        name="HomeTab"
-        options={{
-          tabBarLabel: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="home" size={size} color={color} />
-          ),
+    <SafeAreaView style={{ flex: 1 }}>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: {
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 70, // Increased height
+            backgroundColor: '#fff',
+            borderTopWidth: 1,
+            borderColor: '#ddd',
+            elevation: 5, // Shadow for Android
+            shadowColor: '#000', // Shadow for iOS
+            shadowOffset: {
+              width: 0,
+              height: 2,
+            },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+          },
+          tabBarLabelStyle: {
+            fontSize: 10, // Font size
+            marginBottom: 5, // Margin for bottom
+            textAlign: 'center', // Center text
+          },
+          tabBarIconStyle: {
+            marginBottom: 4, // Icon margin
+          },
         }}
       >
-        {() => <HomeContent localWoodData={localWoodData} />}
-      </Tab.Screen>
-      <Tab.Screen
-        name="Explore"
-        component={ExploreScreen}
-        options={{
-          tabBarLabel: 'Control',
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="explore" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Analytics"
-        options={{
-          tabBarLabel: 'Analytics',
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="pie-chart" size={size} color={color} />
-          ),
-        }}
-      >
-        {() => <AnalyticsDetails localWoodData={localWoodData} />}
-      </Tab.Screen>
-      <Tab.Screen
-        name="Tasks"
-        component={TasksScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="assignment" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="person" size={size} color={color} />
-          ),
-        }}
-      />
-    </Tab.Navigator>
+        <Tab.Screen
+          name="HomeTab"
+          options={{
+            tabBarLabel: 'Home',
+            tabBarIcon: ({ color }) => (
+              <Icon name="home" size={26} color={color} /> // Increased icon size
+            ),
+          }}
+        >
+          {() => <HomeContent localWoodData={localWoodData} />}
+        </Tab.Screen>
+        <Tab.Screen
+          name="Explore"
+          component={ExploreScreen}
+          options={{
+            tabBarLabel: 'Control',
+            tabBarIcon: ({ color }) => (
+              <Icon name="explore" size={26} color={color} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Analytics"
+          options={{
+            tabBarLabel: 'Analytics',
+            tabBarIcon: ({ color }) => (
+              <Icon name="pie-chart" size={26} color={color} />
+            ),
+          }}
+        >
+          {() => <AnalyticsDetails localWoodData={localWoodData} />}
+        </Tab.Screen>
+        <Tab.Screen
+          name="Tasks"
+          component={TasksScreen}
+          options={{
+            tabBarIcon: ({ color }) => (
+              <Icon name="assignment" size={26} color={color} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{
+            tabBarIcon: ({ color }) => (
+              <Icon name="person" size={26} color={color} />
+            ),
+          }}
+        />
+      </Tab.Navigator>
+    </SafeAreaView>
   );
 }
 
@@ -121,13 +144,21 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 60,
+    height: 70,
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderColor: '#ddd',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   navText: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#000',
   },
 });

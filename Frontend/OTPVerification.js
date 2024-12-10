@@ -13,18 +13,15 @@ export default function OTPVerification({ navigation, route }) {
   const inputRefs = useRef([]);
 
   const handleOtpChangeAndVerify = async (index, value) => {
-    // Allow only digits (0-9)
     if (/^[0-9]?$/.test(value)) {
       const newOtp = [...otp];
       newOtp[index] = value; // Store as string
       setOtp(newOtp);
 
-      // Move to the next input box if filled
       if (value && index < otp.length - 1) {
         inputRefs.current[index + 1].focus();
       }
 
-      // If the OTP is complete, verify it
       if (newOtp.every(digit => digit !== '')) {
         await handleVerify(newOtp.join(''));
       }
@@ -34,10 +31,7 @@ export default function OTPVerification({ navigation, route }) {
   const handleVerify = async (concatenatedOtp) => {
     try {
       setLoading(true);
-      console.log('Verifying OTP:', concatenatedOtp); // Log the OTP being verified
       const response = await axios.post(`${backendUrl}/verify-code`, { email, code: concatenatedOtp });
-
-      console.log('Verification Response:', response.data);
 
       if (response.data.success) {
         navigation.navigate('NewPassword', { email });
@@ -45,7 +39,6 @@ export default function OTPVerification({ navigation, route }) {
         setError('Invalid verification code. Please try again.');
       }
     } catch (error) {
-      console.error('Verification Error:', error.response ? error.response.data : error);
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -53,20 +46,14 @@ export default function OTPVerification({ navigation, route }) {
   };
 
   const handleSendCode = async () => {
-    console.log('Sending verification code to:', email); 
     try {
       const response = await axios.post(`${backendUrl}/send-code`, { email });
-      console.log('Response from server:', response.data); 
-
       if (response.data.success) {
-        console.log('Verification code sent successfully');
         Alert.alert('Success', 'Verification code sent successfully. Please check your email.');
       } else {
-        console.error('Error sending verification code:', response.data.message);
         Alert.alert('Error', response.data.message || 'Failed to send verification code.');
       }
     } catch (error) {
-      console.error('Error sending verification code:', error);
       Alert.alert('Error', 'An unexpected error occurred. Please try again.');
     }
   };
@@ -82,17 +69,17 @@ export default function OTPVerification({ navigation, route }) {
         {otp.map((digit, index) => (
           <TextInput
             key={index}
-            ref={el => inputRefs.current[index] = el} // Use refs for focusing
+            ref={el => inputRefs.current[index] = el}
             style={styles.otpInput}
             maxLength={1}
-            value={digit} // Stay as string
+            value={digit}
             onChangeText={(value) => handleOtpChangeAndVerify(index, value)}
             keyboardType="numeric"
             returnKeyType="next"
             onKeyPress={({ nativeEvent }) => {
               if (nativeEvent.key === 'Backspace' && index > 0) {
-                handleOtpChangeAndVerify(index, ''); // Clear the current input
-                inputRefs.current[index - 1].focus(); // Move focus to previous input
+                handleOtpChangeAndVerify(index, '');
+                inputRefs.current[index - 1].focus();
               }
             }}
           />
@@ -137,7 +124,7 @@ const styles = StyleSheet.create({
   },
   otpInputContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
+    justifyContent: 'center', // Center the input boxes
     marginBottom: 20,
     width: '100%',
   },
@@ -150,7 +137,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ccc',
-    marginHorizontal: 2,
+    marginHorizontal: 5, // Increased margin for better spacing
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
