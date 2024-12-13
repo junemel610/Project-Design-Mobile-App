@@ -4,7 +4,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 import axios from 'axios';
 import Constants from 'expo-constants';
 
-const backendUrl = Constants.expoConfig.extra.BACKEND_URL;
+const backendUrl = `https://backend-v2px.onrender.com`;
 
 export default function PasswordResetScreen({ navigation }) {
   const [email, setEmail] = useState('');

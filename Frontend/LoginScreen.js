@@ -5,7 +5,7 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const backendUrl = Constants.expoConfig.extra.BACKEND_URL;
+const backendUrl = `https://backend-v2px.onrender.com`;
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');

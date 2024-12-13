@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 export default function WoodDetails({ route, navigation }) {
@@ -12,8 +12,7 @@ export default function WoodDetails({ route, navigation }) {
   }));
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Back Button */}
+    <View style={styles.container}>
       <TouchableOpacity style={styles.backButtonBottom} onPress={() => navigation.goBack()}>
         <Icon name="arrow-back" size={24} color="#000" />
       </TouchableOpacity>
@@ -37,10 +36,9 @@ export default function WoodDetails({ route, navigation }) {
       ) : (
         <Text style={styles.label}>None</Text>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -49,6 +47,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 20,
     paddingTop: 40, // Added padding to the top for better spacing
+    paddingHorizontal: 15, // Added horizontal padding for better side spacing
   },
   backButtonBottom: {
     position: 'absolute',

@@ -105,15 +105,18 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#000000', // Keep this as is for the input field
     padding: 10,
-    width: '78%',
+    width: '70%',
     borderRadius: 5,
     backgroundColor: '#f4f4f4',
+    marginLeft: 5,
+    position: 'relative'
   },
   addButton: {
     backgroundColor: 'black',
     padding: 10,
     borderRadius: 5,
     justifyContent: 'center',
+    marginRight:5
   },
   buttonText: {
     color: '#fff',
@@ -125,7 +128,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginVertical: 5,
     width: '100%',
-    borderWidth: 2, // Keep border width
+    borderWidth: 1, // Keep border width
     borderColor: '#333333', // Change this to a darker shade for task items
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -138,8 +141,8 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   buttonContainer: {
-    marginVertical: 20,
-    width: '100%',
+    marginVertical: 50,
+    width: '100%'
   },
   modalContainer: {
     flex: 1,

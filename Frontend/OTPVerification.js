@@ -3,7 +3,7 @@ import { View, TextInput, TouchableOpacity, Text, StyleSheet, ScrollView, Alert 
 import axios from 'axios';
 import Constants from 'expo-constants';
 
-const backendUrl = Constants.expoConfig.extra.BACKEND_URL;
+const backendUrl = `https://backend-v2px.onrender.com`;
 
 export default function OTPVerification({ navigation, route }) {
   const { email } = route.params;
