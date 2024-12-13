@@ -1,27 +1,38 @@
 {
-  "expo": {
-    "name": "App1",
-    "slug": "App1",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
+  "name": "InspecturaX",
+  "slug": "App1",
+  "version": "1.0.0",
+  "orientation": "portrait",
+  "icon": "./assets/5.png",
+  "userInterfaceStyle": "light",
+  "splash": {
+    "image": "./assets/5.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#ffffff"
+  },
+    "ios": {
+    "supportsTablet": true,
+    "bundleIdentifier": "com.junemel610.App1"
+  },
+  "android": {
+    "adaptiveIcon": {
+      "foregroundImage": "./assets/5.png",
       "backgroundColor": "#ffffff"
     },
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
+    "package": "com.junemel610.App1"
+  },
+  "web": {
+    "favicon": "./assets/5.png"
+  },
+  "extra": {
+    "eas": {
+      "projectId": "32d80495-b7de-4009-b831-b17d61404f20"
     }
-  }
+  },
+  "sdkVersion": "52.0.0",
+  "platforms": [
+    "ios",
+    "android",
+    "web"
+  ]
 }
